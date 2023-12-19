@@ -59,3 +59,5 @@ AtliQ experiences a 24% revenue loss due to cancellations.
 • Booking Patterns:
 
 Elite-type rooms witness the highest bookings but also a higher cancellation rate.
+
+Reference: https://codebasics.io/challenge/codebasics-resume-project-challenge
