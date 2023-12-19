@@ -1,0 +1,165 @@
+Key Measures and Formulas
+
+1. Revenue
+Purpose: To get the total revenue realized.
+Formula: Revenue = SUM(fact_bookings[revenue_realized])
+Table: fact_bookings
+
+2. Total Bookings
+Purpose: To get the total number of bookings that happened.
+Formula: Total Bookings = COUNT(fact_bookings[booking_id])
+Table: fact_bookings
+
+3. Total Capacity
+Purpose: To get the total capacity of rooms present in hotels.
+Formula: Total Capacity = SUM(fact_aggregated_bookings[capacity])
+Table: fact_aggregated_bookings
+
+4. Total Successful Bookings
+Purpose: To get the total successful bookings that happened for all hotels.
+Formula: Total Successful Bookings = SUM(fact_aggregated_bookings[successful_bookings])
+Table: fact_aggregated_bookings
+
+5. Occupancy %
+Purpose: To calculate the occupancy percentage, which means the total successful bookings happened to the total rooms available (capacity).
+Formula: "Occupancy % = DIVIDE([Total Successful Bookings], [Total Capacity], 0)
+Table: fact_aggregated_bookings
+
+6. Average Rating
+Purpose: To get the average ratings given by customers.
+Formula: Average Rating = AVERAGE(fact_bookings[ratings_given])
+Table: fact_bookings
+
+7. Number of Days
+Purpose: To get the total number of days present in the data.
+Formula: "Number of Days = DATEDIFF(MIN(dim_date[date]), MAX(dim_date[date]), DAY) + 1"
+Table: dim_date
+
+8. Total Cancelled Bookings
+Purpose: To get the count of "Cancelled" bookings out of all total bookings that happened.
+Formula: Total Cancelled Bookings = CALCULATE([Total Bookings], fact_bookings[booking_status] = "Cancelled")
+Table: fact_bookings
+
+9. Cancellation %
+Purpose: To calculate the cancellation percentage.
+Formula: Cancellation % = DIVIDE([Total Cancelled Bookings], [Total Bookings])
+Table: fact_bookings
+
+10. Total Checked Out
+Purpose: To get the count of successful 'Checked Out' bookings out of all total bookings that happened.
+Formula: Total Checked Out = CALCULATE([Total Bookings], fact_bookings[booking_status] = "Checked Out")
+Table: fact_bookings
+
+11. Total No Show Bookings
+Purpose: To get the count of "No Show" bookings out of all total bookings that happened (No Show means customers who neither cancelled nor attended to their booked rooms).
+Formula: Total No Show Bookings = CALCULATE([Total Bookings], fact_bookings[booking_status] = "No Show")
+Table: fact_bookings
+
+12. No Show Rate %
+Purpose: To calculate the no-show percentage.
+Formula: No Show Rate % = DIVIDE([Total No Show Bookings], [Total Bookings])
+Table: fact_bookings
+
+13. Booking % by Platform
+Purpose: To show the percentage contribution of each booking platform for bookings in hotels.
+Formula: "Booking % by Platform = DIVIDE([Total Bookings], CALCULATE([Total Bookings], ALL(fact_bookings[booking_platform]))) * 100"
+Table: fact_bookings
+
+14. Booking % by Room Class
+Purpose: To show the percentage contribution of each room class over the total rooms booked.
+Formula: "Booking % by Room Class = DIVIDE([Total Bookings], CALCULATE([Total Bookings], ALL(dim_rooms[room_class]))) * 100"
+Table: fact_bookings, dim_rooms
+
+15. ADR (Average Daily Rate)
+Purpose: To calculate the ADR, which is the ratio of revenue to the total rooms booked/sold. It is the measure of the average paid for rooms sold in a given time period.
+Formula: ADR = DIVIDE([Revenue], [Total Bookings], 0)
+Table: fact_bookings
+
+16. Realisation %
+Purpose: To calculate the realisation percentage, which is the successful "Checked Out" percentage over all bookings that happened.
+Formula: Realisation % = 1 - ([Cancellation %] + [No Show Rate %])
+Table: fact_bookings
+
+17. RevPAR (Revenue Per Available Room)
+Purpose: To calculate the RevPAR, which represents the revenue generated per available room, whether or not they are occupied. RevPAR helps hotels measure their revenue-generating performance to accurately price rooms. RevPAR can help hotels measure themselves against other properties or brands.
+Formula: RevPAR = DIVIDE([Revenue], [Total Capacity])
+Tables: fact_bookings, fact_agg_bookings
+
+18. DBRN (Daily Booked Room Nights)
+Purpose: To calculate DBRN, which tells on average how many rooms are booked for a day considering a time period.
+Formula: DBRN = DIVIDE([Total Bookings], [Number of Days])
+Tables: fact_bookings, dim_date
+
+19. DSRN (Daily Sellable Room Nights)
+Purpose: To calculate DSRN, which tells on average how many rooms are ready to sell for a day considering a time period.
+Formula: DSRN = DIVIDE([Total Capacity], [Number of Days])
+Tables: fact_agg_bookings, dim_date
+
+20. DURN (Daily Utilized Room Nights)
+Purpose: To calculate DURN, which tells on average how many rooms are successfully utilized by customers for a day considering a time period.
+Formula: DURN = DIVIDE([Total Checked Out], [Number of Days])
+Tables: fact_bookings, dim_date
+
+21. Revenue WoW Change %
+Purpose: To get the revenue change percentage week over week.
+DAX Formula:
+Revenue WoW Change % = 
+VAR selv = IF(HASONEFILTER(dim_date[wn]), SELECTEDVALUE(dim_date[wn]), MAX(dim_date[wn]))
+VAR revcw = CALCULATE([Revenue], dim_date[wn] = selv)
+VAR revpw = CALCULATE([Revenue], FILTER(ALL(dim_date), dim_date[wn] = selv - 1))
+RETURN DIVIDE(revcw, revpw, 0) - 1
+Table: dim_date
+
+22. Occupancy WoW Change %
+Purpose: To get the occupancy change percentage week over week.
+DAX Formula:
+Occupancy WoW Change % = 
+VAR selv = IF(HASONEFILTER(dim_date[wn]), SELECTEDVALUE(dim_date[wn]), MAX(dim_date[wn]))
+VAR revcw = CALCULATE([Occupancy %], dim_date[wn] = selv)
+VAR revpw = CALCULATE([Occupancy %], FILTER(ALL(dim_date), dim_date[wn] = selv - 1))
+RETURN DIVIDE(revcw, revpw, 0) - 1
+Table: dim_date
+
+
+23. ADR WoW Change %
+Purpose: To get the ADR (Average Daily Rate) change percentage week over week.
+DAX Formula:
+ADR WoW Change % = 
+VAR selv = IF(HASONEFILTER(dim_date[wn]), SELECTEDVALUE(dim_date[wn]), MAX(dim_date[wn]))
+VAR revcw = CALCULATE([ADR], dim_date[wn] = selv)
+VAR revpw = CALCULATE([ADR], FILTER(ALL(dim_date), dim_date[wn] = selv - 1))
+RETURN DIVIDE(revcw, revpw, 0) - 1
+Table: dim_date
+
+
+24. RevPar WoW Change %
+Purpose: To get the RevPar (Revenue Per Available Room) change percentage week over week.
+DAX Formula:
+RevPar WoW Change % = 
+VAR selv = IF(HASONEFILTER(dim_date[wn]), SELECTEDVALUE(dim_date[wn]), MAX(dim_date[wn]))
+VAR revcw = CALCULATE([RevPAR], dim_date[wn] = selv)
+VAR revpw = CALCULATE([RevPAR], FILTER(ALL(dim_date), dim_date[wn] = selv - 1))
+RETURN DIVIDE(revcw, revpw, 0) - 1
+Table: dim_date
+
+
+25. Realisation WoW Change %
+Purpose: To get the Realisation change percentage week over week.
+DAX Formula:
+Realisation WoW Change % = 
+VAR selv = IF(HASONEFILTER(dim_date[wn]), SELECTEDVALUE(dim_date[wn]), MAX(dim_date[wn]))
+VAR revcw = CALCULATE([Realisation %], dim_date[wn] = selv)
+VAR revpw = CALCULATE([Realisation %], FILTER(ALL(dim_date), dim_date[wn] = selv - 1))
+RETURN DIVIDE(revcw, revpw, 0) - 1
+Table: dim_date
+
+
+26. DSRN WoW Change %
+Purpose: To get the DSRN (Daily Sellable Room Nights) change percentage week over week.
+DAX Formula:
+DSRN WoW Change % = 
+VAR selv = IF(HASONEFILTER(dim_date[wn]), SELECTEDVALUE(dim_date[wn]), MAX(dim_date[wn]))
+VAR revcw = CALCULATE([DSRN], dim_date[wn] = selv)
+VAR revpw = CALCULATE([DSRN], FILTER(ALL(dim_date), dim_date[wn] = selv - 1))
+RETURN DIVIDE(revcw, revpw, 0) - 1
+Table: dim_date
